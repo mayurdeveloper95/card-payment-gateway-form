@@ -16,13 +16,15 @@ const FormWrapper = () => {
   const useHookForm = useForm();
 
   const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
 
   const handleClose = () => {
     setOpen(false);
+    document.location.reload();
   };
 
-  const onFormSubmit = (data) => {
+  const onFormSubmit = async (data) => {
     const formData = {
       cardNo: data.payment.cardnumber,
       cvv: data.payment.cvv,
@@ -30,7 +32,7 @@ const FormWrapper = () => {
       expiryYear: data.payment.expiry.substring(2, 4),
       name: data.payment.accountHolderName,
     };
-    axios
+    await axios
       .post("https://run.mocky.io/v3/0b14a8da-5fc7-4443-8511-53d687399bc9", {
         headers: {
           "Content-Type": "application/json",
@@ -41,8 +43,25 @@ const FormWrapper = () => {
       .then((response) => {
         setSuccess(response.data);
         setOpen(true);
+      })
+      .catch((err) => {
+        console.log(err);
+        setError(err.data);
+        setOpen(true);
       });
   };
+
+  let currentdate = new Date();
+  let datetime =
+    currentdate.getDate() +
+    "/" +
+    (currentdate.getMonth() + 1) +
+    "/" +
+    currentdate.getFullYear() +
+    " @ " +
+    currentdate.getHours() +
+    ":" +
+    currentdate.getMinutes();
 
   return (
     <FormProvider {...useHookForm}>
@@ -54,17 +73,34 @@ const FormWrapper = () => {
           </Button>
         </Box>
       </form>
-      {success?.success && (
+      {(success?.success || error.data) && (
         <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>Payment Successful</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Your Payment is Successfully Completed.
-              <br />
-              Request Id is:
-              {success.data?.requestId}
-            </DialogContentText>
-          </DialogContent>
+          {success.data && (
+            <>
+              <DialogTitle>Payment Successful</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Your Payment is Successfully Completed.
+                  <br />
+                  Request Id is: {success.data?.requestId}
+                  <br />
+                  Request Date is: {datetime}
+                </DialogContentText>
+              </DialogContent>
+            </>
+          )}
+          {error.data && (
+            <>
+              <DialogTitle>Payment Failure</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  {error.data}
+                  <br />
+                  Request Date is: {datetime}
+                </DialogContentText>
+              </DialogContent>
+            </>
+          )}
           <DialogActions>
             <Button onClick={handleClose}>Ok</Button>
           </DialogActions>

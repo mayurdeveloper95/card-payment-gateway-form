@@ -31,10 +31,15 @@ const CreditCardForm = () => {
         <Grid item xs={12}>
           <TextField
             {...getCardNumberProps({
+              refKey: "inputRef",
               onChange: validation,
             })}
             {...register("payment.cardnumber", {
               maxLength: {
+                value: 16,
+                message: "Card number must be a 16 digit number",
+              },
+              minLength: {
                 value: 16,
                 message: "Card number must be a 16 digit number",
               },
@@ -104,11 +109,11 @@ const CreditCardForm = () => {
             variant="filled"
             error={
               (erroredInputs.cvc && touchedInputs.cvc) ||
-              !!errors?.payment?.ccv?.message
+              !!errors?.payment?.cvv?.message
             }
             helperText={
               (erroredInputs.cvc && touchedInputs.cvc) ||
-              errors?.payment?.ccv?.message
+              errors?.payment?.cvv?.message
             }
           />
         </Grid>
